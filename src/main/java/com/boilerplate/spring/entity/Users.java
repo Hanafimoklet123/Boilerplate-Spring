@@ -2,7 +2,16 @@ package com.boilerplate.spring.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class Users {
@@ -23,14 +32,15 @@ public class Users {
     @Column(name = "email")
     private String email;
 
+    @ManyToMany()
+    private List<Roles> roles = new ArrayList<>();
+
     public Users(String username, String email, String password, String noHp){
         this.username = username;
         this.password = password;
         this.email = email;
         this.noHp = noHp;
     }
-
-    public Users() { }
 
     public Long getId() {
         return id;
@@ -70,6 +80,13 @@ public class Users {
 
     public void setNoHp(String noHp) {
         this.noHp = noHp;
+    }
+
+    public List<Roles> getRoles() {
+        return roles;
+    }
+    public void setRoles(List<Roles> roles) {
+        this.roles = roles;
     }
 
     @Override
