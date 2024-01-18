@@ -1,44 +1,59 @@
 package com.boilerplate.spring.entity;
-
-import jakarta.persistence.*;
-import lombok.Data;
+import com.boilerplate.spring.contant.Permission;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Data
-@Entity
-@Table(name = "roles")
-public class Roles {
+import static com.boilerplate.spring.contant.Permission.ADMIN_CREATE;
+import static com.boilerplate.spring.contant.Permission.ADMIN_DELETE;
+import static com.boilerplate.spring.contant.Permission.ADMIN_READ;
+import static com.boilerplate.spring.contant.Permission.ADMIN_UPDATE;
+import static com.boilerplate.spring.contant.Permission.MANAGER_CREATE;
+import static com.boilerplate.spring.contant.Permission.MANAGER_DELETE;
+import static com.boilerplate.spring.contant.Permission.MANAGER_READ;
+import static com.boilerplate.spring.contant.Permission.MANAGER_UPDATE;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@RequiredArgsConstructor
+public enum Roles {
 
-    @Column(name = "roles")
-    private String roles;
+    USER(Collections.emptySet()),
+    ADMIN(
+            Set.of(
+                    ADMIN_READ,
+                    ADMIN_UPDATE,
+                    ADMIN_DELETE,
+                    ADMIN_CREATE,
+                    MANAGER_READ,
+                    MANAGER_UPDATE,
+                    MANAGER_DELETE,
+                    MANAGER_CREATE
+            )
+    ),
+    MANAGER(
+            Set.of(
+                    MANAGER_READ,
+                    MANAGER_UPDATE,
+                    MANAGER_DELETE,
+                    MANAGER_CREATE
+            )
+    )
 
+    ;
 
-    public Roles(){}
+    @Getter
+    private final Set<Permission> permissions;
 
-    public Roles(String name, String roles){
-        this.roles = roles;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getRoles() {
-        return roles;
-    }
-
-    public void setRoles(String roles) {
-        this.roles = roles;
+    public List<SimpleGrantedAuthority> getAuthorities() {
+        var authorities = getPermissions()
+                .stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+                .collect(Collectors.toList());
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
+        return authorities;
     }
 }

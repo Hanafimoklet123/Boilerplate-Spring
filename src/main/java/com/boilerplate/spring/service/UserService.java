@@ -1,33 +1,41 @@
 package com.boilerplate.spring.service;
 
+import com.boilerplate.spring.dto.ChangePasswordRequest;
 import com.boilerplate.spring.entity.Users;
 import com.boilerplate.spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.security.Principal;
+
 
 @Service
-public class UserService implements UserDetailsService {
+@RequiredArgsConstructor
+public class UserService {
 
-    @Autowired
-    UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepository.findByUsernameOrEmail(username, username);
+    public void changePassword(ChangePasswordRequest request, Principal connectedUser){
+        var user = (Users) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        if(user == null){
-            throw new UsernameNotFoundException("User doesn't Exists By Username");
+        //Check if the current password is correct
+        if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())){
+            throw new IllegalStateException("Wrong Password");
         }
 
-        Set<GrantedAuthority> authorities = user.getRoles().stream().map((role -> new SimpleGrantedAuthority(role.getRoles()))).collect(Collectors.toSet());
-        return new org.springframework.security.core.userdetails.User(username,user.getPassword(),authorities);
+        //Check if the two new passwords are the same
+        if(!request.getNewPassword().equals(request.getConfirmationPassword())){
+            throw new IllegalStateException("Password are not the same");
+        }
+
+        //Update the Password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        //Save to new Password
+        userRepository.save(user);
+
     }
 }

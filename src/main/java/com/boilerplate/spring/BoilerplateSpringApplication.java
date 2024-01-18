@@ -14,13 +14,5 @@ public class BoilerplateSpringApplication {
 		SpringApplication.run(BoilerplateSpringApplication.class, args);
 	}
 
-	@Bean
-	public CommandLineRunner demo(RolesRepository roleRepo){
-		return (args -> {
-			Roles role = new Roles();
-			role.setRoles("ROLE_ADMIN");
-			roleRepo.save(role);
-		});
-	}
 
 }

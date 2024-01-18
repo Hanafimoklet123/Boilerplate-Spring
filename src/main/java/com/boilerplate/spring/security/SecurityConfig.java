@@ -23,12 +23,4 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-//    @Bean
-//    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.csrf().disable()
-//                .authorizeRequests().antMatchers("/api/**", "/h2-console/**").permitAll()
-//                .anyRequest().authenticated();
-//        httpSecurity.headers().frameOptions().disable();
-//        return httpSecurity.build();
-//    }
 }
